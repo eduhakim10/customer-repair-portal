@@ -16,7 +16,7 @@ return [
     */
 
     'defaults' => [
-        'guard' => env('AUTH_GUARD', 'web'),
+        'guard' => env('AUTH_GUARD', 'portal'),
         'passwords' => env('AUTH_PASSWORD_BROKER', 'users'),
     ],
 
@@ -41,6 +41,12 @@ return [
         'web' => [
             'driver' => 'session',
             'provider' => 'users',
+        ],
+
+        // Customer portal: session guard backed by the API (see PortalUserProvider)
+        'portal' => [
+            'driver' => 'session',
+            'provider' => 'portal',
         ],
     ],
 
@@ -67,10 +73,10 @@ return [
             'model' => env('AUTH_MODEL', User::class),
         ],
 
-        // 'users' => [
-        //     'driver' => 'database',
-        //     'table' => 'users',
-        // ],
+        // Custom provider registered in AppServiceProvider (session-backed)
+        'portal' => [
+            'driver' => 'portal',
+        ],
     ],
 
     /*

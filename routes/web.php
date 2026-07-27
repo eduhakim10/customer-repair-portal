@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+/*
+| The customer portal is served entirely by the Filament "customer" panel,
+| which is mounted at the root path ("/"). See CustomerPanelProvider.
+*/

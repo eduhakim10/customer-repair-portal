@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    // Workshop-app backend API (data source for the customer portal)
+    'workshop' => [
+        'base_url' => env('WORKSHOP_API_URL', 'http://workshop-app.test'),
+        'verify' => env('WORKSHOP_API_VERIFY_SSL', false),
+    ],
+
 ];

@@ -71,11 +71,25 @@
                                 <div class="il-value primary">{{ $vehicle['license_plate'] ?? '-' }}</div>
                             </div>
                             <div class="il-item">
+                                <div class="il-label">Warna / Tipe</div>
+                                <div class="il-value">
+                                    {{ collect([$vehicle['color'] ?? null, $vehicle['type'] ?? null])->filter()->implode(' · ') ?: '-' }}
+                                </div>
+                            </div>
+                            <div class="il-item">
+                                <div class="il-label">No. Rangka</div>
+                                <div class="il-value">{{ $vehicle['chassis_number'] ?? '-' }}</div>
+                            </div>
+                            <div class="il-item">
                                 <div class="il-label">Jenis Servis</div>
                                 <div class="il-value">{{ $q['category'] ?? '-' }}</div>
                             </div>
                             <div class="il-item">
-                                <div class="il-label">Tanggal Masuk</div>
+                                <div class="il-label">Klasifikasi Kerusakan</div>
+                                <div class="il-value">{{ $q['damage_classification'] ?? '-' }}</div>
+                            </div>
+                            <div class="il-item">
+                                <div class="il-label">Tanggal Penawaran</div>
                                 <div class="il-value">{{ $q['created_at_formatted'] ?? '-' }}</div>
                             </div>
                             <div class="il-item">
@@ -85,8 +99,16 @@
                                 </div>
                             </div>
                             <div class="il-item">
+                                <div class="il-label">No. SR</div>
+                                <div class="il-value">{{ $q['sr_number'] ?? '-' }}</div>
+                            </div>
+                            <div class="il-item">
                                 <div class="il-label">No. SPK</div>
                                 <div class="il-value">{{ $q['spk_number'] ?? '-' }}</div>
+                            </div>
+                            <div class="il-item">
+                                <div class="il-label">No. PO</div>
+                                <div class="il-value">{{ $q['po_number'] ?? '-' }}</div>
                             </div>
                             @if (! empty($q['service']['complaint']))
                                 <div class="il-item" style="grid-column:span 3;">
@@ -223,10 +245,35 @@
                     </div>
                 </div>
 
-                @if (! empty($q['notes']))
+                @if (! empty($q['notes']) || ! empty($q['payment_terms']) || ! empty($q['delivery_terms']) || ! empty($q['validity_terms']))
                     <div class="side-section">
-                        <div class="side-hd"><i class="fa fa-note-sticky" style="color:#c8102e;margin-right:6px;"></i>Catatan SA</div>
-                        <div class="side-body" style="font-size:12.5px;color:#374151;line-height:1.6;">{{ $q['notes'] }}</div>
+                        <div class="side-hd"><i class="fa fa-note-sticky" style="color:#c8102e;margin-right:6px;"></i>Syarat & Catatan</div>
+                        <div class="side-body" style="display:flex;flex-direction:column;gap:10px;font-size:12.5px;color:#374151;line-height:1.6;">
+                            @if (! empty($q['payment_terms']))
+                                <div>
+                                    <div class="il-label">Payment Terms</div>
+                                    <div>{{ $q['payment_terms'] }}</div>
+                                </div>
+                            @endif
+                            @if (! empty($q['delivery_terms']))
+                                <div>
+                                    <div class="il-label">Delivery Terms</div>
+                                    <div>{{ $q['delivery_terms'] }}</div>
+                                </div>
+                            @endif
+                            @if (! empty($q['validity_terms']))
+                                <div>
+                                    <div class="il-label">Validity</div>
+                                    <div>{{ $q['validity_terms'] }}</div>
+                                </div>
+                            @endif
+                            @if (! empty($q['notes']))
+                                <div>
+                                    <div class="il-label">Catatan SA</div>
+                                    <div>{{ $q['notes'] }}</div>
+                                </div>
+                            @endif
+                        </div>
                     </div>
                 @endif
 

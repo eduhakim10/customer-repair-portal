@@ -2,6 +2,7 @@
 
 namespace App\Filament\Concerns;
 
+use App\Services\WorkshopApi;
 use Filament\Notifications\Notification;
 use Livewire\Features\SupportFileUploads\WithFileUploads;
 
@@ -14,10 +15,6 @@ trait HandlesQuotationModals
     public ?int $modalQuotationId = null;
 
     public $modalPoFile = null;
-
-    public string $modalNotes = '';
-
-    public string $modalReason = '';
 
     public string $modalPoNumber = '';
 
@@ -37,54 +34,50 @@ trait HandlesQuotationModals
         $this->resetModalForm();
     }
 
-    public function submitApprove(): void
-    {
-        $q = $this->findQuotationForModal($this->modalQuotationId);
-        $this->closeQuotationModal();
-
-        Notification::make()
-            ->title('Penawaran disetujui')
-            ->body(($q['offer_number'] ?? 'Penawaran') . ' berhasil disetujui.')
-            ->success()
-            ->send();
-    }
-
-    public function submitReject(): void
-    {
-        $this->validate([
-            'modalReason' => 'required|string',
-        ], [
-            'modalReason.required' => 'Pilih alasan penolakan.',
-        ]);
-
-        $q = $this->findQuotationForModal($this->modalQuotationId);
-        $this->closeQuotationModal();
-
-        Notification::make()
-            ->title('Penawaran ditolak')
-            ->body(($q['offer_number'] ?? 'Penawaran') . ' telah ditolak. Tim MTI akan diberitahu.')
-            ->danger()
-            ->send();
-    }
-
     public function submitUploadPo(): void
     {
         $this->validate([
-            'modalPoNumber' => 'required|string',
+            'modalPoNumber' => 'required|string|max:100',
             'modalPoDate' => 'required|date',
             'modalPoFile' => 'required|file|mimes:pdf|max:10240',
         ], [
             'modalPoNumber.required' => 'No. PO wajib diisi.',
             'modalPoDate.required' => 'Tanggal PO wajib diisi.',
             'modalPoFile.required' => 'File PO wajib diupload.',
+            'modalPoFile.mimes' => 'File PO harus berformat PDF.',
+            'modalPoFile.max' => 'Ukuran file maksimal 10MB.',
         ]);
 
-        $q = $this->findQuotationForModal($this->modalQuotationId);
+        $id = $this->modalQuotationId;
+        $q = $this->findQuotationForModal($id);
+
+        if (! $id || ! $this->modalPoFile) {
+            return;
+        }
+
+        $res = app(WorkshopApi::class)->uploadPo(
+            $id,
+            $this->modalPoNumber,
+            $this->modalPoDate,
+            $this->modalPoFile,
+        );
+
+        if (! $res->successful()) {
+            Notification::make()
+                ->title('Gagal upload PO')
+                ->body($res->json('message') ?? 'Terjadi kesalahan. Coba lagi.')
+                ->danger()
+                ->send();
+
+            return;
+        }
+
         $this->closeQuotationModal();
+        $this->afterQuotationMutation();
 
         Notification::make()
             ->title('PO berhasil diupload')
-            ->body('File PO untuk ' . ($q['offer_number'] ?? 'penawaran') . ' tersimpan dan dikirim ke MTI.')
+            ->body('Penawaran ' . ($q['offer_number'] ?? '') . ' disetujui. File PO telah dikirim ke MTI.')
             ->success()
             ->send();
     }
@@ -100,11 +93,15 @@ trait HandlesQuotationModals
     protected function resetModalForm(): void
     {
         $this->modalPoFile = null;
-        $this->modalNotes = '';
-        $this->modalReason = '';
         $this->modalPoNumber = '';
         $this->modalPoDate = '';
         $this->resetValidation();
+    }
+
+    /** Hook for pages to refresh list/detail after upload PO. */
+    protected function afterQuotationMutation(): void
+    {
+        //
     }
 
     /**

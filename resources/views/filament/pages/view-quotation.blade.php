@@ -12,8 +12,7 @@
     $code = $status['code'] ?? '';
     $lineItems = $q['line_items'] ?? [];
     $totals = $q['totals'] ?? [];
-    $canApprove = $code === 'menunggu';
-    $canUploadPo = $code === 'disetujui';
+    $canUploadPo = $code === 'menunggu';
     $groupedItems = collect($lineItems)->groupBy(fn ($item) => $item['group'] ?? 'Item');
     $groupIcons = ['JASA' => 'fa-wrench', 'SUKU CADANG' => 'fa-cogs'];
 @endphp
@@ -38,14 +37,6 @@
                 <button type="button" class="btn-portal btn-portal-sm" wire:click="printQuotation">
                     <i class="fa fa-print" aria-hidden="true"></i> Cetak
                 </button>
-                @if ($canApprove)
-                    <button type="button" class="btn-portal btn-portal-sm btn-portal-danger-outline" wire:click="openQuotationModal('reject', {{ $record }})">
-                        <i class="fa fa-times" aria-hidden="true"></i> Tolak
-                    </button>
-                    <button type="button" class="btn-portal btn-portal-sm btn-portal-success" wire:click="openQuotationModal('approve', {{ $record }})">
-                        <i class="fa fa-check" aria-hidden="true"></i> Setujui Penawaran
-                    </button>
-                @endif
                 @if ($canUploadPo)
                     <button type="button" class="btn-portal btn-portal-sm btn-portal-primary" wire:click="openQuotationModal('uploadPo', {{ $record }})">
                         <i class="fa fa-upload" aria-hidden="true"></i> Upload PO
@@ -277,21 +268,11 @@
                     </div>
                 @endif
 
-                @if ($canApprove || $canUploadPo)
+                @if ($canUploadPo)
                     <div class="side-actions">
-                        @if ($canApprove)
-                            <button type="button" class="btn-portal btn-portal-success btn-portal-block" wire:click="openQuotationModal('approve', {{ $record }})">
-                                <i class="fa fa-check" aria-hidden="true"></i> Setujui Penawaran
-                            </button>
-                            <button type="button" class="btn-portal btn-portal-danger-outline btn-portal-block" wire:click="openQuotationModal('reject', {{ $record }})">
-                                <i class="fa fa-times" aria-hidden="true"></i> Tolak Penawaran
-                            </button>
-                        @endif
-                        @if ($canUploadPo)
-                            <button type="button" class="btn-portal btn-portal-primary btn-portal-block" wire:click="openQuotationModal('uploadPo', {{ $record }})">
-                                <i class="fa fa-upload" aria-hidden="true"></i> Upload PO
-                            </button>
-                        @endif
+                        <button type="button" class="btn-portal btn-portal-primary btn-portal-block" wire:click="openQuotationModal('uploadPo', {{ $record }})">
+                            <i class="fa fa-upload" aria-hidden="true"></i> Upload PO
+                        </button>
                     </div>
                 @endif
             </div>

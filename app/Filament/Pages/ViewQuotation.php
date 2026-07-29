@@ -7,6 +7,7 @@ use App\Services\WorkshopApi;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Support\Facades\Session;
 
 class ViewQuotation extends Page
 {
@@ -43,11 +44,22 @@ class ViewQuotation extends Page
     public function mount(int $record): void
     {
         $this->record = $record;
-        $this->quotation = app(WorkshopApi::class)->quotation($record);
+        $this->reloadQuotation();
+    }
+
+    public function reloadQuotation(): void
+    {
+        $this->quotation = app(WorkshopApi::class)->quotation($this->record);
 
         if (! $this->quotation) {
             abort(404);
         }
+    }
+
+    protected function afterQuotationMutation(): void
+    {
+        $this->reloadQuotation();
+        Session::forget('portal_quotations_cache');
     }
 
     public function printQuotation(): void
@@ -61,10 +73,6 @@ class ViewQuotation extends Page
 
     protected function findQuotationForModal(?int $id): ?array
     {
-        if (! $id || $id !== $this->record) {
-            return $this->quotation;
-        }
-
         return $this->quotation;
     }
 }

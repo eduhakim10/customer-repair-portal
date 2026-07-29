@@ -7,10 +7,13 @@ use App\Services\WorkshopApi;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Support\Facades\Session;
 
 class Quotations extends Page
 {
     use HandlesQuotationModals;
+
+    private const SESSION_QUOTATIONS = 'portal_quotations_cache';
 
     protected static ?string $navigationIcon = 'heroicon-o-document-currency-dollar';
 
@@ -23,8 +26,6 @@ class Quotations extends Page
     protected static ?int $navigationSort = 2;
 
     protected static string $view = 'filament.pages.quotations';
-
-    public array $quotations = [];
 
     public string $tab = 'all';
 
@@ -54,9 +55,6 @@ class Quotations extends Page
 
     public int $perPage = 10;
 
-    /** @var array<int, int> */
-    public array $selected = [];
-
     public function getHeading(): string|Htmlable
     {
         return '';
@@ -70,14 +68,27 @@ class Quotations extends Page
 
     public function loadQuotations(): void
     {
-        $this->quotations = app(WorkshopApi::class)->quotations();
+        // Keep list out of Livewire snapshot (avoids 413 on tab/filter clicks).
+        Session::put(self::SESSION_QUOTATIONS, app(WorkshopApi::class)->quotations());
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    protected function quotationsList(): array
+    {
+        return Session::get(self::SESSION_QUOTATIONS, []);
+    }
+
+    protected function afterQuotationMutation(): void
+    {
+        $this->loadQuotations();
     }
 
     public function setTab(string $tab): void
     {
         $this->tab = $tab;
         $this->page = 1;
-        $this->selected = [];
     }
 
     public function updatedSearch(): void
@@ -126,24 +137,12 @@ class Quotations extends Page
         $this->page = max(1, min($page, $this->totalPages()));
     }
 
-    public function toggleAll(bool $checked): void
-    {
-        $this->selected = $checked
-            ? collect($this->paginatedQuotations())->pluck('id')->map(fn ($id) => (int) $id)->all()
-            : [];
-    }
-
-    public function clearSelection(): void
-    {
-        $this->selected = [];
-    }
-
     /**
      * @return array<int, array<string, mixed>>
      */
     public function filteredQuotations(): array
     {
-        $items = collect($this->quotations)
+        $items = collect($this->quotationsList())
             ->filter(function (array $q): bool {
                 if ($this->tab !== 'all' && ($q['status']['tab'] ?? '') !== $this->tab) {
                     return false;
@@ -220,19 +219,20 @@ class Quotations extends Page
 
     public function tabCounts(): array
     {
-        $all = count($this->quotations);
+        $list = $this->quotationsList();
+        $all = count($list);
 
         return [
             'all' => $all,
-            'pending' => collect($this->quotations)->where('status.tab', 'pending')->count(),
-            'approved' => collect($this->quotations)->where('status.tab', 'approved')->count(),
-            'rejected' => collect($this->quotations)->where('status.tab', 'rejected')->count(),
+            'pending' => collect($list)->where('status.tab', 'pending')->count(),
+            'approved' => collect($list)->where('status.tab', 'approved')->count(),
+            'rejected' => collect($list)->where('status.tab', 'rejected')->count(),
         ];
     }
 
     public function vehicleOptions(): array
     {
-        return collect($this->quotations)
+        return collect($this->quotationsList())
             ->map(fn (array $q) => [
                 'plate' => $q['license_plate'] ?? '',
                 'label' => trim(($q['vehicle'] ?? '') . ' – ' . ($q['license_plate'] ?? '')),
@@ -241,28 +241,6 @@ class Quotations extends Page
             ->unique('plate')
             ->pluck('label', 'plate')
             ->all();
-    }
-
-    public function bulkApprove(): void
-    {
-        $count = count($this->selected);
-        $this->selected = [];
-        Notification::make()
-            ->title('Penawaran disetujui')
-            ->body("{$count} penawaran telah disetujui.")
-            ->success()
-            ->send();
-    }
-
-    public function bulkReject(): void
-    {
-        $count = count($this->selected);
-        $this->selected = [];
-        Notification::make()
-            ->title('Penawaran ditolak')
-            ->body("{$count} penawaran telah ditolak.")
-            ->danger()
-            ->send();
     }
 
     public function downloadQuotation(int $id): void
@@ -291,6 +269,6 @@ class Quotations extends Page
      */
     private function findQuotation(int $id): array
     {
-        return collect($this->quotations)->firstWhere('id', $id) ?? [];
+        return collect($this->quotationsList())->firstWhere('id', $id) ?? [];
     }
 }

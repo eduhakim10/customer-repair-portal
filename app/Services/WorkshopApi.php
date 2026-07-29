@@ -85,6 +85,23 @@ class WorkshopApi
         return $res->successful() ? $res->json('data') : null;
     }
 
+    /**
+     * @param  \Livewire\Features\SupportFileUploads\TemporaryUploadedFile|\Illuminate\Http\UploadedFile  $file
+     */
+    public function uploadPo(int $id, string $poNumber, string $poDate, $file): Response
+    {
+        return $this->client()
+            ->attach(
+                'po_file',
+                file_get_contents($file->getRealPath()),
+                $file->getClientOriginalName() ?: 'po.pdf',
+            )
+            ->post("/quotations/{$id}/upload-po", [
+                'po_number' => $poNumber,
+                'po_date' => $poDate,
+            ]);
+    }
+
     public function users(): array
     {
         return $this->client()->get('/users')->json('data') ?? [];

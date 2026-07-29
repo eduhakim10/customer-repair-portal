@@ -15,7 +15,7 @@
     $tabs = [
         'all' => 'Semua',
         'pending' => 'Menunggu Persetujuan',
-        'approved' => 'Disetujui',
+        'approved' => 'PO Diupload',
         'rejected' => 'Ditolak',
     ];
     $totalPages = $this->totalPages();
@@ -26,7 +26,7 @@
         <div class="page-hd">
             <div>
                 <div class="page-title">Penawaran</div>
-                <div class="page-sub">Kelola dan setujui penawaran dari MTI</div>
+                <div class="page-sub">Kelola penawaran dari MTI — setujui dengan mengupload PO</div>
             </div>
         </div>
 
@@ -64,9 +64,7 @@
                             <select wire:model="draftStatusFilter">
                                 <option value="">Semua Status</option>
                                 <option>Menunggu</option>
-                                <option>Disetujui</option>
                                 <option>PO Diupload</option>
-                                <option>Proses Servis</option>
                                 <option>Ditolak</option>
                             </select>
                         </div>
@@ -105,13 +103,6 @@
                 <table class="ftable">
                     <thead>
                         <tr>
-                            <th style="width:40px;">
-                                <input
-                                    type="checkbox"
-                                    wire:change="toggleAll($event.target.checked)"
-                                    @checked(count($selected) && count($selected) === count($rows) && count($rows) > 0)
-                                />
-                            </th>
                             <th class="sortable" wire:click="sortBy('offer_number')">
                                 Quotation Number
                                 <i @class([
@@ -161,9 +152,6 @@
                             @endphp
                             <tr wire:key="quotation-{{ $q['id'] }}">
                                 <td>
-                                    <input type="checkbox" wire:model.live="selected" value="{{ $q['id'] }}" />
-                                </td>
-                                <td>
                                     <a href="{{ \App\Filament\Pages\ViewQuotation::getUrl(['record' => $q['id']]) }}" class="ref-link" @if($isRejected) style="color:#9ca3af;text-decoration:line-through;" @endif>
                                         {{ $q['offer_number'] ?? '-' }}
                                     </a>
@@ -194,13 +182,6 @@
                                         </a>
 
                                         @if ($code === 'menunggu')
-                                            <button type="button" class="btn-portal btn-portal-sm btn-portal-icon btn-portal-success" title="Setujui" wire:click="openQuotationModal('approve', {{ $q['id'] }})">
-                                                <i class="fa fa-check" aria-hidden="true"></i>
-                                            </button>
-                                            <button type="button" class="btn-portal btn-portal-sm btn-portal-icon btn-portal-danger-outline" title="Tolak" wire:click="openQuotationModal('reject', {{ $q['id'] }})">
-                                                <i class="fa fa-times" aria-hidden="true"></i>
-                                            </button>
-                                        @elseif ($code === 'disetujui')
                                             <button type="button" class="btn-portal btn-portal-sm btn-portal-primary" wire:click="openQuotationModal('uploadPo', {{ $q['id'] }})">
                                                 <i class="fa fa-upload" aria-hidden="true"></i> Upload PO
                                             </button>
@@ -214,29 +195,12 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="portal-empty">Belum ada penawaran.</td>
+                                <td colspan="7" class="portal-empty">Belum ada penawaran.</td>
                             </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
-
-            @if (count($selected))
-                <div class="bulk-bar">
-                    <span class="bulk-count">{{ count($selected) }}</span> baris dipilih
-                    <div class="bulk-actions">
-                        <button type="button" class="bulk-btn bulk-btn-approve" wire:click="bulkApprove">
-                            <i class="fa fa-check" aria-hidden="true"></i> Setujui Semua
-                        </button>
-                        <button type="button" class="bulk-btn bulk-btn-reject" wire:click="bulkReject">
-                            <i class="fa fa-times" aria-hidden="true"></i> Tolak Semua
-                        </button>
-                    </div>
-                    <button type="button" class="bulk-close" wire:click="clearSelection" aria-label="Batal pilih">
-                        <i class="fa fa-times" aria-hidden="true"></i>
-                    </button>
-                </div>
-            @endif
 
             <div class="pagination">
                 <span>{{ $this->paginationLabel() }}</span>

@@ -676,6 +676,46 @@
 
     .pagination { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-top: 1px solid rgba(15, 23, 42, 0.06); font-size: 12.5px; color: #6b7280; }
 
+    /* Loading overlay (quotations list, tabs, pagination) */
+    .portal-loading-host { position: relative; }
+    .portal-loading-overlay {
+        display: none;
+        position: absolute;
+        inset: 0;
+        z-index: 20;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.72);
+        backdrop-filter: blur(2px);
+        border-radius: inherit;
+    }
+    .portal-loading-overlay.is-visible { display: flex; }
+    .portal-loading-box {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        padding: 16px 22px;
+        background: #fff;
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+        font-size: 13px;
+        font-weight: 600;
+        color: #374151;
+    }
+    .portal-spinner {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        border: 3px solid #fecaca;
+        border-top-color: #c8102e;
+        animation: portal-spin 0.7s linear infinite;
+    }
+    @keyframes portal-spin {
+        to { transform: rotate(360deg); }
+    }
+
     /* Quotation detail */
     .record-header {
         background: #fff; border: 1px solid rgba(15, 23, 42, 0.07); border-radius: 12px; padding: 16px 20px; margin-bottom: 16px;

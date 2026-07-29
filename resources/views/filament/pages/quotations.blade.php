@@ -8,21 +8,21 @@
         'primary' => 'badge-primary',
         'purple' => 'badge-purple',
     ];
-    $rows = $this->paginatedQuotations();
-    $filteredCount = count($this->filteredQuotations());
-    $counts = $this->tabCounts();
-    $vehicles = $this->vehicleOptions();
+    $rows = $ready ? $this->paginatedQuotations() : [];
+    $filteredCount = $ready ? count($this->filteredQuotations()) : 0;
+    $counts = $ready ? $this->tabCounts() : ['all' => 0, 'pending' => 0, 'approved' => 0, 'rejected' => 0];
+    $vehicles = $ready ? $this->vehicleOptions() : [];
     $tabs = [
         'all' => 'Semua',
         'pending' => 'Menunggu Persetujuan',
         'approved' => 'PO Diupload',
         'rejected' => 'Ditolak',
     ];
-    $totalPages = $this->totalPages();
+    $totalPages = $ready ? $this->totalPages() : 1;
 @endphp
 
 <x-filament-panels::page>
-    <div class="portal-page">
+    <div class="portal-page" wire:init="loadQuotations">
         <div class="page-hd">
             <div>
                 <div class="page-title">Penawaran</div>
@@ -30,16 +30,45 @@
             </div>
         </div>
 
-        <div class="resource-card">
-            <div class="portal-tabs">
+        <div class="resource-card portal-loading-host">
+            {{-- Initial load (menu click) --}}
+            @unless ($ready)
+                <div class="portal-loading-overlay is-visible" aria-live="polite" aria-busy="true">
+                    <div class="portal-loading-box">
+                        <div class="portal-spinner" aria-hidden="true"></div>
+                        <span>Memuat penawaran…</span>
+                    </div>
+                </div>
+            @endunless
+
+            {{-- Tab / pagination / search / filter / sort --}}
+            <div
+                class="portal-loading-overlay"
+                wire:loading.class="is-visible"
+                wire:target="loadQuotations,setTab,goToPage,sortBy,applyFilters,clearFilters,search"
+                aria-live="polite"
+                aria-busy="true"
+            >
+                <div class="portal-loading-box">
+                    <div class="portal-spinner" aria-hidden="true"></div>
+                    <span>Memuat…</span>
+                </div>
+            </div>
+
+            <div class="portal-tabs" @unless($ready) style="pointer-events:none;opacity:.6;" @endunless>
                 @foreach ($tabs as $key => $label)
                     <button
                         type="button"
                         wire:click="setTab('{{ $key }}')"
+                        wire:loading.attr="disabled"
+                        wire:target="setTab,goToPage,loadQuotations"
                         @class(['portal-tab', 'active' => $tab === $key])
                     >
                         {{ $label }}
-                        <span class="tab-count">{{ $counts[$key] ?? 0 }}</span>
+                        <span class="tab-count" wire:loading.remove wire:target="setTab">{{ $counts[$key] ?? 0 }}</span>
+                        <span class="tab-count" wire:loading wire:target="setTab" style="min-width:1.2em;">
+                            <i class="fa fa-spinner fa-spin" aria-hidden="true"></i>
+                        </span>
                     </button>
                 @endforeach
             </div>
@@ -47,11 +76,11 @@
             <div class="tbl-toolbar">
                 <div class="search-box">
                     <i class="fa fa-magnifying-glass" aria-hidden="true"></i>
-                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari quotation number, kendaraan..." />
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari quotation number, kendaraan..." @disabled(! $ready) />
                 </div>
 
                 <div class="filter-dropdown" x-data="{ open: false }">
-                    <button type="button" class="btn-portal btn-portal-sm" @click="open = !open">
+                    <button type="button" class="btn-portal btn-portal-sm" @click="open = !open" @disabled(! $ready)>
                         <i class="fa fa-sliders" aria-hidden="true"></i> Filter
                     </button>
                     <div class="filter-panel" :class="{ open: open }" @click.outside="open = false">
@@ -95,11 +124,16 @@
                 </div>
 
                 <div class="tbl-toolbar-right">
-                    <span style="font-size:12px;color:#9ca3af;">{{ $filteredCount }} data</span>
+                    <span style="font-size:12px;color:#9ca3af;" wire:loading.remove wire:target="setTab,goToPage,search,applyFilters,clearFilters,sortBy,loadQuotations">
+                        {{ $filteredCount }} data
+                    </span>
+                    <span style="font-size:12px;color:#9ca3af;" wire:loading wire:target="setTab,goToPage,search,applyFilters,clearFilters,sortBy,loadQuotations">
+                        <i class="fa fa-spinner fa-spin" aria-hidden="true"></i> memuat…
+                    </span>
                 </div>
             </div>
 
-            <div style="overflow-x:auto;">
+            <div class="portal-table-wrap" style="overflow-x:auto; min-height: 220px;">
                 <table class="ftable">
                     <thead>
                         <tr>
@@ -195,7 +229,13 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="portal-empty">Belum ada penawaran.</td>
+                                <td colspan="7" class="portal-empty">
+                                    @if ($ready)
+                                        Belum ada penawaran.
+                                    @else
+                                        Memuat data…
+                                    @endif
+                                </td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -203,20 +243,25 @@
             </div>
 
             <div class="pagination">
-                <span>{{ $this->paginationLabel() }}</span>
+                <span wire:loading.remove wire:target="goToPage,setTab,search,applyFilters,clearFilters,sortBy,loadQuotations">
+                    {{ $ready ? $this->paginationLabel() : 'Memuat data…' }}
+                </span>
+                <span wire:loading wire:target="goToPage,setTab,search,applyFilters,clearFilters,sortBy,loadQuotations">
+                    <i class="fa fa-spinner fa-spin" aria-hidden="true"></i> Memuat…
+                </span>
                 @if ($totalPages > 1)
                     <div class="page-btns">
-                        <button type="button" class="page-btn" wire:click="goToPage({{ $page - 1 }})" @disabled($page <= 1)>
+                        <button type="button" class="page-btn" wire:click="goToPage({{ $page - 1 }})" wire:loading.attr="disabled" wire:target="goToPage" @disabled($page <= 1)>
                             <i class="fa fa-chevron-left" style="font-size:11px;" aria-hidden="true"></i>
                         </button>
                         @for ($p = 1; $p <= min($totalPages, 5); $p++)
-                            <button type="button" class="page-btn @if($page === $p) active @endif" wire:click="goToPage({{ $p }})">{{ $p }}</button>
+                            <button type="button" class="page-btn @if($page === $p) active @endif" wire:click="goToPage({{ $p }})" wire:loading.attr="disabled" wire:target="goToPage">{{ $p }}</button>
                         @endfor
                         @if ($totalPages > 5)
                             <span style="padding:0 4px;color:#9ca3af;">...</span>
-                            <button type="button" class="page-btn @if($page === $totalPages) active @endif" wire:click="goToPage({{ $totalPages }})">{{ $totalPages }}</button>
+                            <button type="button" class="page-btn @if($page === $totalPages) active @endif" wire:click="goToPage({{ $totalPages }})" wire:loading.attr="disabled" wire:target="goToPage">{{ $totalPages }}</button>
                         @endif
-                        <button type="button" class="page-btn" wire:click="goToPage({{ $page + 1 }})" @disabled($page >= $totalPages)>
+                        <button type="button" class="page-btn" wire:click="goToPage({{ $page + 1 }})" wire:loading.attr="disabled" wire:target="goToPage" @disabled($page >= $totalPages)>
                             <i class="fa fa-chevron-right" style="font-size:11px;" aria-hidden="true"></i>
                         </button>
                     </div>

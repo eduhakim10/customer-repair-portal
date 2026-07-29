@@ -55,6 +55,8 @@ class Quotations extends Page
 
     public int $perPage = 10;
 
+    public bool $ready = false;
+
     public function getHeading(): string|Htmlable
     {
         return '';
@@ -62,14 +64,20 @@ class Quotations extends Page
 
     public function mount(): void
     {
-        $this->loadQuotations();
         $this->syncDraftFilters();
+
+        // Tampilkan data cache dulu (kalau ada) biar halaman tidak kosong,
+        // lalu wire:init akan refresh dari API dengan overlay loading.
+        if (Session::has(self::SESSION_QUOTATIONS)) {
+            $this->ready = true;
+        }
     }
 
     public function loadQuotations(): void
     {
         // Keep list out of Livewire snapshot (avoids 413 on tab/filter clicks).
         Session::put(self::SESSION_QUOTATIONS, app(WorkshopApi::class)->quotations());
+        $this->ready = true;
     }
 
     /**

@@ -281,6 +281,70 @@
     .wb-sub { font-size: 12.5px; opacity: 0.7; margin-top: 4px; }
     .wb-icon { font-size: 48px; opacity: 0.15; }
 
+    .dash-period {
+        background: #fff;
+        border-radius: 12px;
+        border: 1px solid rgba(15, 23, 42, 0.07);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        padding: 14px 18px;
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+
+    .dash-period-error {
+        width: 100%;
+        font-size: 12px;
+        color: #dc2626;
+        margin-top: -4px;
+    }
+
+    .dash-period-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: #111827;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .dash-period-title i { color: #c8102e; }
+    .dash-period-hint { font-size: 12px; color: #6b7280; margin-top: 4px; }
+
+    .dash-period-controls {
+        display: flex;
+        align-items: flex-end;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .dash-period-field span {
+        display: block;
+        font-size: 11px;
+        font-weight: 600;
+        color: #6b7280;
+        margin-bottom: 4px;
+    }
+
+    .dash-period-field input[type=date] {
+        height: 34px;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 0 10px;
+        font-size: 13px;
+        color: #111827;
+        background: #fff;
+        font-family: inherit;
+    }
+
+    .dash-period-field input[type=date]:focus {
+        outline: none;
+        border-color: #c8102e;
+        box-shadow: 0 0 0 2px rgba(200, 16, 46, 0.1);
+    }
+
     .stats-grid {
         display: grid;
         grid-template-columns: repeat(5, 1fr);

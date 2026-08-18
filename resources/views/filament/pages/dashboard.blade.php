@@ -30,6 +30,40 @@
             <i class="fa fa-truck wb-icon" aria-hidden="true"></i>
         </div>
 
+        <form class="dash-period" wire:submit="applyPeriod">
+            <div class="dash-period-copy">
+                <div class="dash-period-title">
+                    <i class="fa fa-calendar-days" aria-hidden="true"></i>
+                    Periode data
+                </div>
+                <div class="dash-period-hint">
+                    Default: {{ $period['lookback_days'] ?? 30 }} hari terakhir
+                    ({{ ! empty($period['default_from']) ? \Illuminate\Support\Carbon::parse($period['default_from'])->translatedFormat('d M Y') : '-' }}
+                    –
+                    {{ ! empty($period['default_to']) ? \Illuminate\Support\Carbon::parse($period['default_to'])->translatedFormat('d M Y') : '-' }})
+                </div>
+            </div>
+            <div class="dash-period-controls">
+                <label class="dash-period-field">
+                    <span>Dari</span>
+                    <input type="date" wire:model="dateFrom" max="{{ $dateTo }}" />
+                </label>
+                <label class="dash-period-field">
+                    <span>Sampai</span>
+                    <input type="date" wire:model="dateTo" min="{{ $dateFrom }}" />
+                </label>
+                <button type="submit" class="btn-portal btn-portal-sm btn-portal-primary">
+                    <i class="fa fa-check" aria-hidden="true"></i> Terapkan
+                </button>
+                <button type="button" class="btn-portal btn-portal-sm" wire:click="resetPeriod">
+                    Reset
+                </button>
+            </div>
+            @error('dateTo')
+                <div class="dash-period-error">{{ $message }}</div>
+            @enderror
+        </form>
+
         <div class="stats-grid">
             @foreach ($cards as $card)
                 <div class="stat-card">

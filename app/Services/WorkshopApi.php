@@ -68,9 +68,14 @@ class WorkshopApi
         return Session::get(self::SESSION_USER);
     }
 
-    public function dashboard(): array
+    public function dashboard(?string $from = null, ?string $to = null): array
     {
-        return $this->client()->get('/dashboard')->json() ?? [];
+        $query = array_filter([
+            'from' => $from,
+            'to' => $to,
+        ], fn ($value) => filled($value));
+
+        return $this->client()->get('/dashboard', $query)->json() ?? [];
     }
 
     public function quotations(): array

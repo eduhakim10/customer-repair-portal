@@ -90,6 +90,14 @@ class WorkshopApi
         return $res->successful() ? $res->json('data') : null;
     }
 
+    /** HTML print page from workshop-app (same layout/signature as staff print). */
+    public function quotationPrint(int $id): Response
+    {
+        return $this->client()
+            ->accept('text/html')
+            ->get("/quotations/{$id}/print");
+    }
+
     /**
      * @param  \Livewire\Features\SupportFileUploads\TemporaryUploadedFile|\Illuminate\Http\UploadedFile  $file
      */

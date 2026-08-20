@@ -4,7 +4,6 @@ namespace App\Filament\Pages;
 
 use App\Filament\Concerns\HandlesQuotationModals;
 use App\Services\WorkshopApi;
-use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Facades\Session;
@@ -253,12 +252,8 @@ class Quotations extends Page
 
     public function downloadQuotation(int $id): void
     {
-        $q = $this->findQuotation($id);
-        Notification::make()
-            ->title('Unduh penawaran')
-            ->body('Fitur unduh PDF untuk ' . ($q['offer_number'] ?? 'penawaran') . ' akan segera tersedia.')
-            ->info()
-            ->send();
+        $url = route('quotations.print', $id);
+        $this->js('window.open(' . json_encode($url) . ', "_blank")');
     }
 
     protected function findQuotationForModal(?int $id): ?array

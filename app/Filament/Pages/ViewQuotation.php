@@ -4,7 +4,6 @@ namespace App\Filament\Pages;
 
 use App\Filament\Concerns\HandlesQuotationModals;
 use App\Services\WorkshopApi;
-use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Facades\Session;
@@ -60,15 +59,6 @@ class ViewQuotation extends Page
     {
         $this->reloadQuotation();
         Session::forget('portal_quotations_cache');
-    }
-
-    public function printQuotation(): void
-    {
-        Notification::make()
-            ->title('Cetak penawaran')
-            ->body('Fitur cetak akan segera tersedia.')
-            ->info()
-            ->send();
     }
 
     protected function findQuotationForModal(?int $id): ?array

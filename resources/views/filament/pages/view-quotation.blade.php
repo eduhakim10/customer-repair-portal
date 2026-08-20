@@ -34,9 +34,9 @@
                 </div>
             </div>
             <div class="rh-actions">
-                <button type="button" class="btn-portal btn-portal-sm" wire:click="printQuotation">
+                <a href="{{ route('quotations.print', $record) }}" target="_blank" rel="noopener" class="btn-portal btn-portal-sm">
                     <i class="fa fa-print" aria-hidden="true"></i> Cetak
-                </button>
+                </a>
                 @if ($canUploadPo)
                     <button type="button" class="btn-portal btn-portal-sm btn-portal-primary" wire:click="openQuotationModal('uploadPo', {{ $record }})">
                         <i class="fa fa-upload" aria-hidden="true"></i> Upload PO

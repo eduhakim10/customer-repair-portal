@@ -151,7 +151,7 @@ class Quotations extends Page
     {
         $items = collect($this->quotationsList())
             ->filter(function (array $q): bool {
-                if ($this->tab !== 'all' && ($q['status']['tab'] ?? '') !== $this->tab) {
+                if ($this->tab !== 'all' && ($q['status']['code'] ?? '') !== $this->tab) {
                     return false;
                 }
 
@@ -227,14 +227,28 @@ class Quotations extends Page
     public function tabCounts(): array
     {
         $list = $this->quotationsList();
-        $all = count($list);
 
         return [
-            'all' => $all,
-            'pending' => collect($list)->where('status.tab', 'pending')->count(),
-            'approved' => collect($list)->where('status.tab', 'approved')->count(),
-            'rejected' => collect($list)->where('status.tab', 'rejected')->count(),
+            'all' => count($list),
+            'kendaraan_diterima' => collect($list)->where('status.code', 'kendaraan_diterima')->count(),
+            'antrian' => collect($list)->where('status.code', 'antrian')->count(),
+            'dikerjakan' => collect($list)->where('status.code', 'dikerjakan')->count(),
+            'finishgood' => collect($list)->where('status.code', 'finishgood')->count(),
         ];
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public function portalStatusFilterOptions(): array
+    {
+        return collect($this->quotationsList())
+            ->pluck('status.label')
+            ->filter()
+            ->unique()
+            ->sort()
+            ->values()
+            ->all();
     }
 
     public function vehicleOptions(): array

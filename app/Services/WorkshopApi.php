@@ -157,6 +157,14 @@ class WorkshopApi
         return $res->successful() ? ($res->json() ?? ['data' => []]) : ['data' => []];
     }
 
+    /** HTML before/after page (same layout as workshop staff Service Request print). */
+    public function servicePhotosPage(int $id, string $type): Response
+    {
+        return $this->client()
+            ->accept('text/html')
+            ->get("/services/{$id}/photos-page", ['type' => $type]);
+    }
+
     private function client(bool $withToken = true): PendingRequest
     {
         $client = Http::baseUrl($this->baseUrl)

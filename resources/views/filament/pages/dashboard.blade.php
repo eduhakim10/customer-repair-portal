@@ -162,12 +162,14 @@
                                 @foreach ($service['progress']['steps'] as $step)
                                     @php
                                         $isClickable = ($step['clickable'] ?? false) && ! empty($step['action']);
+                                        $photoType = ($step['action'] ?? '') === 'before_photos' ? 'before' : 'after';
                                     @endphp
                                     @if ($isClickable)
-                                        <button
-                                            type="button"
+                                        <a
+                                            href="{{ route('services.photos', ['id' => $service['id'], 'type' => $photoType]) }}"
+                                            target="_blank"
+                                            rel="noopener"
                                             class="progress-step progress-step-btn {{ $step['done'] ? 'done' : '' }} {{ $step['active'] && ! $step['done'] ? 'active' : '' }}"
-                                            wire:click="openServicePhotos({{ $service['id'] }}, '{{ $step['action'] === 'before_photos' ? 'before' : 'after' }}')"
                                             title="Lihat {{ ($step['photo_count'] ?? 0) }} foto"
                                         >
                                             <div class="step-dot">
@@ -178,7 +180,7 @@
                                                 @endif
                                             </div>
                                             <div class="step-label">{{ $step['label'] }}</div>
-                                        </button>
+                                        </a>
                                     @else
                                         <div @class([
                                             'progress-step',
@@ -210,25 +212,5 @@
                 </div>
             </div>
         </div>
-
-        @if ($photoModalOpen)
-            <div class="portal-photo-modal-backdrop" wire:click="closePhotoModal">
-                <div class="portal-photo-modal" wire:click.stop>
-                    <div class="portal-photo-modal-hd">
-                        <span>{{ $photoModalTitle }}</span>
-                        <button type="button" class="portal-photo-modal-close" wire:click="closePhotoModal" aria-label="Tutup">
-                            <i class="fa fa-times" aria-hidden="true"></i>
-                        </button>
-                    </div>
-                    <div class="portal-photo-grid">
-                        @foreach ($photoModalImages as $photo)
-                            <a href="{{ $photo['url'] }}" target="_blank" rel="noopener" class="portal-photo-item">
-                                <img src="{{ $photo['url'] }}" alt="Foto service" loading="lazy" />
-                            </a>
-                        @endforeach
-                    </div>
-                </div>
-            </div>
-        @endif
     </div>
 </x-filament-panels::page>

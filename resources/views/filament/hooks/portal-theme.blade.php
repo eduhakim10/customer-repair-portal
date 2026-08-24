@@ -162,6 +162,14 @@
         flex-shrink: 0;
     }
 
+    .portal-brand-logo {
+        height: 32px;
+        width: auto;
+        object-fit: contain;
+        flex-shrink: 0;
+        border-radius: 4px;
+    }
+
     .portal-brand-name {
         font-size: 12.5px;
         font-weight: 700;
@@ -635,6 +643,8 @@
         padding: 0;
         cursor: pointer;
         font: inherit;
+        text-decoration: none;
+        color: inherit;
     }
 
     .progress-step-btn:hover .step-dot {

@@ -34,32 +34,6 @@ class Dashboard extends Page
 
     public ?string $dateTo = null;
 
-    public bool $photoModalOpen = false;
-
-    public string $photoModalTitle = '';
-
-    public array $photoModalImages = [];
-
-    public function openServicePhotos(int $serviceId, string $type): void
-    {
-        $res = app(WorkshopApi::class)->servicePhotos($serviceId, $type);
-
-        if (empty($res['data'])) {
-            return;
-        }
-
-        $this->photoModalTitle = $type === 'before' ? 'Foto Before' : 'Foto After';
-        $this->photoModalImages = $res['data'];
-        $this->photoModalOpen = true;
-    }
-
-    public function closePhotoModal(): void
-    {
-        $this->photoModalOpen = false;
-        $this->photoModalImages = [];
-        $this->photoModalTitle = '';
-    }
-
     public static function getRoutePath(): string
     {
         return '/';

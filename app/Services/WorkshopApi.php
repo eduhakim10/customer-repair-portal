@@ -149,6 +149,14 @@ class WorkshopApi
         return $this->client()->delete("/users/{$id}");
     }
 
+    /** @return array{data: array<int, array{id:int,url:string}>, type?: string} */
+    public function servicePhotos(int $id, string $type): array
+    {
+        $res = $this->client()->get("/services/{$id}/photos", ['type' => $type]);
+
+        return $res->successful() ? ($res->json() ?? ['data' => []]) : ['data' => []];
+    }
+
     private function client(bool $withToken = true): PendingRequest
     {
         $client = Http::baseUrl($this->baseUrl)

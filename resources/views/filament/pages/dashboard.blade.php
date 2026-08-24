@@ -16,7 +16,10 @@
         ['desc' => 'Total PO Dikeluarkan', 'val' => $stats['total_po'] ?? 0, 'bg' => '#f5f3ff', 'fg' => '#7c3aed', 'icon' => 'fa-file-contract'],
     ];
 
-    $activeServices = collect($services)->filter(fn ($s) => ($s['progress']['badge']['label'] ?? '') !== 'Selesai')->count();
+    $finishedLabels = ['Finishgood', 'Selesai'];
+    $activeServices = collect($services)->filter(
+        fn ($s) => ! in_array($s['progress']['badge']['label'] ?? '', $finishedLabels, true)
+    )->count();
 @endphp
 
 <x-filament-panels::page>
@@ -157,20 +160,41 @@
 
                             <div class="progress-steps">
                                 @foreach ($service['progress']['steps'] as $step)
-                                    <div @class([
-                                        'progress-step',
-                                        'done' => $step['done'],
-                                        'active' => $step['active'] && ! $step['done'],
-                                    ])>
-                                        <div class="step-dot">
-                                            @if ($step['done'])
-                                                <i class="fa fa-check" aria-hidden="true"></i>
-                                            @else
-                                                {{ $step['no'] }}
-                                            @endif
+                                    @php
+                                        $isClickable = ($step['clickable'] ?? false) && ! empty($step['action']);
+                                    @endphp
+                                    @if ($isClickable)
+                                        <button
+                                            type="button"
+                                            class="progress-step progress-step-btn {{ $step['done'] ? 'done' : '' }} {{ $step['active'] && ! $step['done'] ? 'active' : '' }}"
+                                            wire:click="openServicePhotos({{ $service['id'] }}, '{{ $step['action'] === 'before_photos' ? 'before' : 'after' }}')"
+                                            title="Lihat {{ ($step['photo_count'] ?? 0) }} foto"
+                                        >
+                                            <div class="step-dot">
+                                                @if ($step['done'])
+                                                    <i class="fa fa-check" aria-hidden="true"></i>
+                                                @else
+                                                    <i class="fa fa-camera" aria-hidden="true"></i>
+                                                @endif
+                                            </div>
+                                            <div class="step-label">{{ $step['label'] }}</div>
+                                        </button>
+                                    @else
+                                        <div @class([
+                                            'progress-step',
+                                            'done' => $step['done'],
+                                            'active' => $step['active'] && ! $step['done'],
+                                        ])>
+                                            <div class="step-dot">
+                                                @if ($step['done'])
+                                                    <i class="fa fa-check" aria-hidden="true"></i>
+                                                @else
+                                                    {{ $step['no'] }}
+                                                @endif
+                                            </div>
+                                            <div class="step-label">{{ $step['label'] }}</div>
                                         </div>
-                                        <div class="step-label">{{ $step['label'] }}</div>
-                                    </div>
+                                    @endif
                                 @endforeach
                             </div>
 
@@ -186,5 +210,25 @@
                 </div>
             </div>
         </div>
+
+        @if ($photoModalOpen)
+            <div class="portal-photo-modal-backdrop" wire:click="closePhotoModal">
+                <div class="portal-photo-modal" wire:click.stop>
+                    <div class="portal-photo-modal-hd">
+                        <span>{{ $photoModalTitle }}</span>
+                        <button type="button" class="portal-photo-modal-close" wire:click="closePhotoModal" aria-label="Tutup">
+                            <i class="fa fa-times" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                    <div class="portal-photo-grid">
+                        @foreach ($photoModalImages as $photo)
+                            <a href="{{ $photo['url'] }}" target="_blank" rel="noopener" class="portal-photo-item">
+                                <img src="{{ $photo['url'] }}" alt="Foto service" loading="lazy" />
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        @endif
     </div>
 </x-filament-panels::page>

@@ -13,3 +13,4 @@ Route::middleware(['web', 'auth:portal'])->group(function () {
         ->whereNumber('id')
         ->name('quotations.print');
 });
+

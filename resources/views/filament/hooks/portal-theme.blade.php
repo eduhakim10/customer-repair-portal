@@ -629,6 +629,85 @@
     .progress-step.done .step-label { color: #16a34a; }
     .progress-step.active .step-label { color: #c8102e; }
 
+    .progress-step-btn {
+        background: none;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+        font: inherit;
+    }
+
+    .progress-step-btn:hover .step-dot {
+        border-color: #c8102e;
+        color: #c8102e;
+    }
+
+    .progress-step-btn:hover .step-label {
+        color: #c8102e;
+        text-decoration: underline;
+    }
+
+    .portal-photo-modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.55);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+    }
+
+    .portal-photo-modal {
+        background: #fff;
+        border-radius: 12px;
+        max-width: 900px;
+        width: 100%;
+        max-height: 90vh;
+        overflow: auto;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+    }
+
+    .portal-photo-modal-hd {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 20px;
+        border-bottom: 1px solid #e5e7eb;
+        font-weight: 700;
+        color: #111827;
+    }
+
+    .portal-photo-modal-close {
+        background: none;
+        border: none;
+        font-size: 18px;
+        color: #6b7280;
+        cursor: pointer;
+        padding: 4px 8px;
+    }
+
+    .portal-photo-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 12px;
+        padding: 16px 20px 20px;
+    }
+
+    .portal-photo-item {
+        display: block;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid #e5e7eb;
+    }
+
+    .portal-photo-item img {
+        width: 100%;
+        height: 140px;
+        object-fit: cover;
+        display: block;
+    }
+
     .service-meta {
         display: flex;
         align-items: center;

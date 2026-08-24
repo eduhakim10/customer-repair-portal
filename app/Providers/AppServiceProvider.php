@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Auth\PortalUserProvider;
 use App\Services\WorkshopApi;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -23,5 +24,11 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Auth::provider('portal', fn () => new PortalUserProvider());
+
+        // Livewire signed upload URLs follow APP_URL. Force https when APP_URL is https
+        // so mixed-content does not block file uploads behind TLS termination.
+        if (str_starts_with((string) config('app.url'), 'https://')) {
+            URL::forceScheme('https');
+        }
     }
 }

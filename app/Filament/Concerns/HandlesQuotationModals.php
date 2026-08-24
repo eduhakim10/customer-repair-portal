@@ -55,12 +55,24 @@ trait HandlesQuotationModals
             return;
         }
 
-        $res = app(WorkshopApi::class)->uploadPo(
-            $id,
-            $this->modalPoNumber,
-            $this->modalPoDate,
-            $this->modalPoFile,
-        );
+        try {
+            $res = app(WorkshopApi::class)->uploadPo(
+                $id,
+                $this->modalPoNumber,
+                $this->modalPoDate,
+                $this->modalPoFile,
+            );
+        } catch (\Throwable $e) {
+            report($e);
+
+            Notification::make()
+                ->title('Gagal upload PO')
+                ->body('Tidak dapat terhubung ke server workshop. Periksa WORKSHOP_API_URL / koneksi server.')
+                ->danger()
+                ->send();
+
+            return;
+        }
 
         if (! $res->successful()) {
             Notification::make()

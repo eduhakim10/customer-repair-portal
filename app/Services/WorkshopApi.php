@@ -103,16 +103,30 @@ class WorkshopApi
      */
     public function uploadPo(int $id, string $poNumber, string $poDate, $file): Response
     {
-        return $this->client()
-            ->attach(
-                'po_file',
-                file_get_contents($file->getRealPath()),
-                $file->getClientOriginalName() ?: 'po.pdf',
-            )
-            ->post("/quotations/{$id}/upload-po", [
-                'po_number' => $poNumber,
-                'po_date' => $poDate,
-            ]);
+        $path = $file->getRealPath();
+        $stream = fopen($path, 'r');
+
+        if ($stream === false) {
+            throw new \RuntimeException('Tidak dapat membaca file PO sementara.');
+        }
+
+        try {
+            return $this->client()
+                ->timeout(120)
+                ->attach(
+                    'po_file',
+                    $stream,
+                    $file->getClientOriginalName() ?: 'po.pdf',
+                )
+                ->post("/quotations/{$id}/upload-po", [
+                    'po_number' => $poNumber,
+                    'po_date' => $poDate,
+                ]);
+        } finally {
+            if (is_resource($stream)) {
+                fclose($stream);
+            }
+        }
     }
 
     public function users(): array

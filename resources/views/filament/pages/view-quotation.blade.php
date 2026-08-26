@@ -5,14 +5,14 @@
         'warning' => 'badge-warning',
         'info' => 'badge-info',
         'danger' => 'badge-danger',
+        'gray' => 'badge-gray',
         'purple' => 'badge-purple',
     ];
     $status = $q['status'] ?? [];
     $vehicle = $q['vehicle'] ?? [];
-    $code = $status['code'] ?? '';
     $lineItems = $q['line_items'] ?? [];
     $totals = $q['totals'] ?? [];
-    $canUploadPo = $code === 'menunggu';
+    $canUploadPo = (bool) ($q['can_upload_po'] ?? false);
     $groupedItems = collect($lineItems)->groupBy(fn ($item) => $item['group'] ?? 'Item');
     $groupIcons = ['JASA' => 'fa-wrench', 'SUKU CADANG' => 'fa-cogs'];
 @endphp

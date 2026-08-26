@@ -10,13 +10,15 @@
     ];
     $rows = $ready ? $this->paginatedQuotations() : [];
     $filteredCount = $ready ? count($this->filteredQuotations()) : 0;
-    $counts = $ready ? $this->tabCounts() : ['all' => 0, 'pending' => 0, 'approved' => 0, 'rejected' => 0];
+    $counts = $ready ? $this->tabCounts() : ['all' => 0, 'kendaraan_diterima' => 0, 'antrian' => 0, 'dikerjakan' => 0, 'finishgood' => 0];
     $vehicles = $ready ? $this->vehicleOptions() : [];
+    $statusOptions = $ready ? $this->portalStatusFilterOptions() : [];
     $tabs = [
         'all' => 'Semua',
-        'pending' => 'Menunggu Persetujuan',
-        'approved' => 'PO Diupload',
-        'rejected' => 'Ditolak',
+        'kendaraan_diterima' => 'Kendaraan Diterima',
+        'antrian' => 'Antrian',
+        'dikerjakan' => 'Dikerjakan',
+        'finishgood' => 'Finishgood',
     ];
     $totalPages = $ready ? $this->totalPages() : 1;
 @endphp
@@ -92,9 +94,9 @@
                             <label>Status</label>
                             <select wire:model="draftStatusFilter">
                                 <option value="">Semua Status</option>
-                                <option>Menunggu</option>
-                                <option>PO Diupload</option>
-                                <option>Ditolak</option>
+                                @foreach ($statusOptions as $label)
+                                    <option value="{{ $label }}">{{ $label }}</option>
+                                @endforeach
                             </select>
                         </div>
                         <div class="filter-field">
@@ -181,8 +183,9 @@
                     <tbody>
                         @forelse ($rows as $q)
                             @php
-                                $code = $q['status']['code'] ?? '';
-                                $isRejected = $code === 'ditolak';
+                                $isRejected = (bool) ($q['is_rejected'] ?? false);
+                                $canUploadPo = (bool) ($q['can_upload_po'] ?? false);
+                                $hasPoFile = (bool) ($q['has_po_file'] ?? false);
                             @endphp
                             <tr wire:key="quotation-{{ $q['id'] }}">
                                 <td>
@@ -215,13 +218,13 @@
                                             <i class="fa fa-eye" aria-hidden="true"></i>
                                         </a>
 
-                                        @if ($code === 'menunggu')
+                                        @if ($canUploadPo)
                                             <button type="button" class="btn-portal btn-portal-sm btn-portal-primary" wire:click="openQuotationModal('uploadPo', {{ $q['id'] }})">
                                                 <i class="fa fa-upload" aria-hidden="true"></i> Upload PO
                                             </button>
-                                        @elseif ($code === 'po_diupload')
-                                            <button type="button" class="btn-portal btn-portal-sm btn-portal-icon" title="Download" wire:click="downloadQuotation({{ $q['id'] }})">
-                                                <i class="fa fa-download" aria-hidden="true"></i>
+                                        @elseif ($hasPoFile)
+                                            <button type="button" class="btn-portal btn-portal-sm btn-portal-icon" title="Cetak" wire:click="downloadQuotation({{ $q['id'] }})">
+                                                <i class="fa fa-print" aria-hidden="true"></i>
                                             </button>
                                         @endif
                                     </div>

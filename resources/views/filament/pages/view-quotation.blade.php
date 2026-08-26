@@ -101,12 +101,6 @@
                                 <div class="il-label">No. PO</div>
                                 <div class="il-value">{{ $q['po_number'] ?? '-' }}</div>
                             </div>
-                            @if (! empty($q['service']['complaint']))
-                                <div class="il-item" style="grid-column:span 3;">
-                                    <div class="il-label">Keluhan Customer</div>
-                                    <div class="il-value" style="font-size:13px;color:#374151;">{{ $q['service']['complaint'] }}</div>
-                                </div>
-                            @endif
                         </div>
                     </div>
                 </div>

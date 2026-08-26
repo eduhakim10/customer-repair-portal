@@ -9,11 +9,10 @@
     ];
 
     $cards = [
-        ['desc' => 'Total Unit Sedang Diperbaiki', 'val' => $stats['sedang_diperbaiki'] ?? 0, 'bg' => '#eff6ff', 'fg' => '#3b82f6', 'icon' => 'fa-car'],
         ['desc' => 'Total Unit Sedang Menunggu', 'val' => $stats['sedang_menunggu'] ?? 0, 'bg' => '#fefce8', 'fg' => '#d97706', 'icon' => 'fa-clock'],
-        ['desc' => 'Penawaran Berlangsung', 'val' => $stats['penawaran_berlangsung'] ?? 0, 'bg' => '#fff1f2', 'fg' => '#c8102e', 'icon' => 'fa-file-invoice'],
+        ['desc' => 'Total Unit Sedang Diperbaiki', 'val' => $stats['sedang_diperbaiki'] ?? 0, 'bg' => '#eff6ff', 'fg' => '#3b82f6', 'icon' => 'fa-car'],
         ['desc' => 'Total Unit Sudah Diperbaiki', 'val' => $stats['sudah_diperbaiki'] ?? 0, 'bg' => '#f0fdf4', 'fg' => '#16a34a', 'icon' => 'fa-circle-check'],
-        ['desc' => 'Total PO Dikeluarkan', 'val' => $stats['total_po'] ?? 0, 'bg' => '#f5f3ff', 'fg' => '#7c3aed', 'icon' => 'fa-file-contract'],
+        ['desc' => 'Total Belum Ada PO', 'val' => $stats['belum_ada_po'] ?? 0, 'bg' => '#fff1f2', 'fg' => '#c8102e', 'icon' => 'fa-file-circle-xmark'],
     ];
 
     $finishedLabels = ['Finishgood', 'Selesai'];
@@ -109,8 +108,8 @@
                                         </a>
                                     </td>
                                     <td>
-                                        <div style="font-weight:600;font-size:12.5px;">{{ $q['vehicle'] ?? '-' }}</div>
-                                        <div class="cell-sub">{{ $q['license_plate'] ?? '-' }}</div>
+                                        <div style="font-weight:700;font-size:12.5px;">{{ $q['license_plate'] ?? '-' }}</div>
+                                        <div class="cell-sub">{{ $q['vehicle'] ?? '-' }}</div>
                                     </td>
                                     <td class="cell-muted">
                                         {{ ! empty($q['date']) ? \Illuminate\Support\Carbon::parse($q['date'])->translatedFormat('d M Y') : '-' }}

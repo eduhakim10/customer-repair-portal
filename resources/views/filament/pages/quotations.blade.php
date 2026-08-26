@@ -194,9 +194,9 @@
                                     </a>
                                 </td>
                                 <td>
-                                    <div style="font-weight:600;font-size:13px;@if($isRejected)color:#9ca3af;@endif">{{ $q['vehicle'] ?? '-' }}</div>
+                                    <div style="font-weight:700;font-size:13px;@if($isRejected)color:#9ca3af;@endif">{{ $q['license_plate'] ?? '-' }}</div>
                                     <div class="cell-sub">
-                                        {{ $q['license_plate'] ?? '-' }}
+                                        {{ $q['vehicle'] ?? '-' }}
                                         @if (! empty($q['vehicle_year']))
                                             · {{ $q['vehicle_year'] }}
                                         @endif

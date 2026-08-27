@@ -146,9 +146,9 @@
                         <div class="service-card">
                             <div class="service-hd">
                                 <div>
-                                    <div class="service-vehicle">{{ $service['vehicle'] }}</div>
+                                    <div class="service-vehicle">{{ $service['license_plate'] ?? '-' }}</div>
                                     <div class="service-plat">
-                                        {{ $service['license_plate'] }}
+                                        {{ $service['vehicle'] ?? '-' }}
                                         @if (! empty($service['category']))
                                             · {{ $service['category'] }}
                                         @endif

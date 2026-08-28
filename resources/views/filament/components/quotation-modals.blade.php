@@ -13,10 +13,6 @@
                 </button>
             </div>
             <div class="portal-modal-bd">
-                <div class="portal-alert portal-alert-success">
-                    <i class="fa fa-circle-check" aria-hidden="true"></i>
-                    <span>Upload PO untuk <strong>{{ $modalNo }}</strong> berarti Anda menyetujui penawaran ini.</span>
-                </div>
                 <div class="portal-field">
                     <label>No. PO <span class="req">*</span></label>
                     <input type="text" wire:model="modalPoNumber" placeholder="Cth: PO-2025-0042" />

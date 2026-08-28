@@ -89,7 +89,7 @@ trait HandlesQuotationModals
 
         Notification::make()
             ->title('PO berhasil diupload')
-            ->body('Penawaran ' . ($q['offer_number'] ?? '') . ' disetujui. File PO telah dikirim ke MTI.')
+            ->body('File PO untuk penawaran ' . ($q['offer_number'] ?? '') . ' telah dikirim ke MTI.')
             ->success()
             ->send();
     }

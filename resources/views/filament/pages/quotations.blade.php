@@ -28,7 +28,6 @@
         <div class="page-hd">
             <div>
                 <div class="page-title">Penawaran</div>
-                <div class="page-sub">Kelola penawaran dari MTI — setujui dengan mengupload PO</div>
             </div>
         </div>
 

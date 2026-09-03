@@ -37,6 +37,16 @@
                 <a href="{{ route('quotations.print', $record) }}" target="_blank" rel="noopener" class="btn-portal btn-portal-sm">
                     <i class="fa fa-print" aria-hidden="true"></i> Cetak
                 </a>
+                @if (! empty($q['can_print_before']))
+                    <a href="{{ route('services.photos', ['id' => $record, 'type' => 'before']) }}" target="_blank" rel="noopener" class="btn-portal btn-portal-sm" title="Cetak foto before">
+                        <i class="fa fa-camera" aria-hidden="true"></i> Before
+                    </a>
+                @endif
+                @if (! empty($q['can_print_after']))
+                    <a href="{{ route('services.photos', ['id' => $record, 'type' => 'after']) }}" target="_blank" rel="noopener" class="btn-portal btn-portal-sm" title="Cetak foto after">
+                        <i class="fa fa-camera" aria-hidden="true"></i> After
+                    </a>
+                @endif
                 @if ($canUploadPo)
                     <button type="button" class="btn-portal btn-portal-sm btn-portal-primary" wire:click="openQuotationModal('uploadPo', {{ $record }})">
                         <i class="fa fa-upload" aria-hidden="true"></i> Upload PO

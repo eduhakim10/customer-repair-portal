@@ -80,7 +80,7 @@ class Dashboard extends Page
         $this->period = $data['period'] ?? [];
         $this->quotations = array_key_exists('quotations', $data)
             ? ($data['quotations'] ?? [])
-            : array_slice($api->quotations(), 0, 4);
+            : array_slice(app(WorkshopApi::class)->quotations($this->dateFrom, $this->dateTo)['data'] ?? [], 0, 4);
 
         $this->dateFrom = $this->period['from'] ?? $this->dateFrom;
         $this->dateTo = $this->period['to'] ?? $this->dateTo;

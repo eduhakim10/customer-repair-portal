@@ -14,6 +14,14 @@ class Quotations extends Page
 
     private const SESSION_QUOTATIONS = 'portal_quotations_cache';
 
+    private const TABS = [
+        'all' => 'Semua',
+        'sedang_menunggu' => 'Sedang Menunggu',
+        'sedang_diperbaiki' => 'Sedang Diperbaiki',
+        'sudah_diperbaiki' => 'Sudah Diperbaiki',
+        'belum_ada_po' => 'Belum PO',
+    ];
+
     protected static ?string $navigationIcon = 'heroicon-o-document-currency-dollar';
 
     protected static ?string $navigationLabel = 'Quotations';
@@ -56,6 +64,12 @@ class Quotations extends Page
 
     public bool $ready = false;
 
+    /** @return array<string, string> */
+    public static function tabLabels(): array
+    {
+        return self::TABS;
+    }
+
     public function getHeading(): string|Htmlable
     {
         return '';
@@ -63,6 +77,20 @@ class Quotations extends Page
 
     public function mount(): void
     {
+        $tab = (string) request()->query('tab', 'all');
+        if (array_key_exists($tab, self::TABS)) {
+            $this->tab = $tab;
+        }
+
+        $from = request()->query('from');
+        $to = request()->query('to');
+        if (filled($from)) {
+            $this->dateFrom = (string) $from;
+        }
+        if (filled($to)) {
+            $this->dateTo = (string) $to;
+        }
+
         $this->syncDraftFilters();
 
         // Tampilkan data cache dulu (kalau ada) biar halaman tidak kosong,
@@ -75,8 +103,42 @@ class Quotations extends Page
     public function loadQuotations(): void
     {
         // Keep list out of Livewire snapshot (avoids 413 on tab/filter clicks).
-        Session::put(self::SESSION_QUOTATIONS, app(WorkshopApi::class)->quotations());
+        $payload = app(WorkshopApi::class)->quotations($this->dateFrom, $this->dateTo);
+        Session::put(self::SESSION_QUOTATIONS, $payload);
+
+        $period = $payload['period'] ?? [];
+        if (blank($this->dateFrom) && ! empty($period['from'])) {
+            $this->dateFrom = $period['from'];
+        }
+        if (blank($this->dateTo) && ! empty($period['to'])) {
+            $this->dateTo = $period['to'];
+        }
+        $this->syncDraftFilters();
+
         $this->ready = true;
+    }
+
+    /**
+     * @return array{data: array<int, array<string, mixed>>, counts: array<string, int>, period: array<string, mixed>}
+     */
+    protected function quotationsPayload(): array
+    {
+        $payload = Session::get(self::SESSION_QUOTATIONS, []);
+
+        if (! is_array($payload)) {
+            return ['data' => [], 'counts' => [], 'period' => []];
+        }
+
+        // Legacy session shape: bare list
+        if ($payload !== [] && array_is_list($payload)) {
+            return ['data' => $payload, 'counts' => [], 'period' => []];
+        }
+
+        return [
+            'data' => $payload['data'] ?? [],
+            'counts' => $payload['counts'] ?? [],
+            'period' => $payload['period'] ?? [],
+        ];
     }
 
     /**
@@ -84,7 +146,7 @@ class Quotations extends Page
      */
     protected function quotationsList(): array
     {
-        return Session::get(self::SESSION_QUOTATIONS, []);
+        return $this->quotationsPayload()['data'];
     }
 
     protected function afterQuotationMutation(): void
@@ -94,6 +156,10 @@ class Quotations extends Page
 
     public function setTab(string $tab): void
     {
+        if (! array_key_exists($tab, self::TABS)) {
+            return;
+        }
+
         $this->tab = $tab;
         $this->page = 1;
     }
@@ -118,6 +184,7 @@ class Quotations extends Page
         $this->dateFrom = $this->draftDateFrom;
         $this->dateTo = $this->draftDateTo;
         $this->page = 1;
+        $this->loadQuotations();
     }
 
     public function clearFilters(): void
@@ -126,7 +193,12 @@ class Quotations extends Page
         $this->draftVehicleFilter = '';
         $this->draftDateFrom = null;
         $this->draftDateTo = null;
-        $this->applyFilters();
+        $this->statusFilter = '';
+        $this->vehicleFilter = '';
+        $this->dateFrom = null;
+        $this->dateTo = null;
+        $this->page = 1;
+        $this->loadQuotations();
     }
 
     public function sortBy(string $column): void
@@ -151,8 +223,11 @@ class Quotations extends Page
     {
         $items = collect($this->quotationsList())
             ->filter(function (array $q): bool {
-                if ($this->tab !== 'all' && ($q['status']['code'] ?? '') !== $this->tab) {
-                    return false;
+                if ($this->tab !== 'all') {
+                    $buckets = $q['buckets'] ?? [];
+                    if (empty($buckets[$this->tab])) {
+                        return false;
+                    }
                 }
 
                 if ($this->search !== '' && ! str_contains($q['search'] ?? '', strtolower($this->search))) {
@@ -164,14 +239,6 @@ class Quotations extends Page
                 }
 
                 if ($this->vehicleFilter !== '' && ($q['license_plate'] ?? '') !== $this->vehicleFilter) {
-                    return false;
-                }
-
-                if ($this->dateFrom && ($q['date'] ?? '') < $this->dateFrom) {
-                    return false;
-                }
-
-                if ($this->dateTo && ($q['date'] ?? '') > $this->dateTo) {
                     return false;
                 }
 
@@ -226,14 +293,26 @@ class Quotations extends Page
 
     public function tabCounts(): array
     {
-        $list = $this->quotationsList();
+        $payload = $this->quotationsPayload();
+        $counts = $payload['counts'];
+        $list = $payload['data'];
+
+        // Prefer API counts (same as dashboard). Fallback: derive from row flags.
+        if ($counts === []) {
+            $counts = [
+                'sedang_menunggu' => collect($list)->filter(fn ($q) => ! empty($q['buckets']['sedang_menunggu']))->count(),
+                'sedang_diperbaiki' => collect($list)->filter(fn ($q) => ! empty($q['buckets']['sedang_diperbaiki']))->count(),
+                'sudah_diperbaiki' => collect($list)->filter(fn ($q) => ! empty($q['buckets']['sudah_diperbaiki']))->count(),
+                'belum_ada_po' => collect($list)->filter(fn ($q) => ! empty($q['buckets']['belum_ada_po']))->count(),
+            ];
+        }
 
         return [
             'all' => count($list),
-            'kendaraan_diterima' => collect($list)->where('status.code', 'kendaraan_diterima')->count(),
-            'antrian' => collect($list)->where('status.code', 'antrian')->count(),
-            'dikerjakan' => collect($list)->where('status.code', 'dikerjakan')->count(),
-            'finishgood' => collect($list)->where('status.code', 'finishgood')->count(),
+            'sedang_menunggu' => (int) ($counts['sedang_menunggu'] ?? 0),
+            'sedang_diperbaiki' => (int) ($counts['sedang_diperbaiki'] ?? 0),
+            'sudah_diperbaiki' => (int) ($counts['sudah_diperbaiki'] ?? 0),
+            'belum_ada_po' => (int) ($counts['belum_ada_po'] ?? 0),
         ];
     }
 

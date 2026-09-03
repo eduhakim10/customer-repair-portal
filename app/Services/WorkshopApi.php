@@ -78,9 +78,29 @@ class WorkshopApi
         return $this->client()->get('/dashboard', $query)->json() ?? [];
     }
 
-    public function quotations(): array
+    public function quotations(?string $from = null, ?string $to = null): array
     {
-        return $this->client()->get('/quotations')->json('data') ?? [];
+        $query = array_filter([
+            'from' => $from,
+            'to' => $to,
+        ], fn ($value) => filled($value));
+
+        $json = $this->client()->get('/quotations', $query)->json() ?? [];
+
+        // Back-compat: older API returned a bare list under "data" only.
+        if (! array_key_exists('counts', $json) && array_key_exists(0, $json)) {
+            return [
+                'data' => $json,
+                'counts' => [],
+                'period' => [],
+            ];
+        }
+
+        return [
+            'data' => $json['data'] ?? [],
+            'counts' => $json['counts'] ?? [],
+            'period' => $json['period'] ?? [],
+        ];
     }
 
     public function quotation(int $id): ?array

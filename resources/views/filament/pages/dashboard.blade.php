@@ -9,16 +9,46 @@
     ];
 
     $cards = [
-        ['desc' => 'Total Unit Sedang Menunggu', 'val' => $stats['sedang_menunggu'] ?? 0, 'bg' => '#fefce8', 'fg' => '#d97706', 'icon' => 'fa-clock'],
-        ['desc' => 'Total Unit Sedang Diperbaiki', 'val' => $stats['sedang_diperbaiki'] ?? 0, 'bg' => '#eff6ff', 'fg' => '#3b82f6', 'icon' => 'fa-car'],
-        ['desc' => 'Total Unit Sudah Diperbaiki', 'val' => $stats['sudah_diperbaiki'] ?? 0, 'bg' => '#f0fdf4', 'fg' => '#16a34a', 'icon' => 'fa-circle-check'],
-        ['desc' => 'Total Belum Ada PO', 'val' => $stats['belum_ada_po'] ?? 0, 'bg' => '#fff1f2', 'fg' => '#c8102e', 'icon' => 'fa-file-circle-xmark'],
+        [
+            'key' => 'sedang_menunggu',
+            'desc' => 'Total Unit Sedang Menunggu',
+            'val' => $stats['sedang_menunggu'] ?? 0,
+            'bg' => '#fefce8',
+            'fg' => '#d97706',
+            'icon' => 'fa-clock',
+        ],
+        [
+            'key' => 'sedang_diperbaiki',
+            'desc' => 'Total Unit Sedang Diperbaiki',
+            'val' => $stats['sedang_diperbaiki'] ?? 0,
+            'bg' => '#eff6ff',
+            'fg' => '#3b82f6',
+            'icon' => 'fa-car',
+        ],
+        [
+            'key' => 'sudah_diperbaiki',
+            'desc' => 'Total Unit Sudah Diperbaiki',
+            'val' => $stats['sudah_diperbaiki'] ?? 0,
+            'bg' => '#f0fdf4',
+            'fg' => '#16a34a',
+            'icon' => 'fa-circle-check',
+        ],
+        [
+            'key' => 'belum_ada_po',
+            'desc' => 'Total Belum Ada PO',
+            'val' => $stats['belum_ada_po'] ?? 0,
+            'bg' => '#fff1f2',
+            'fg' => '#c8102e',
+            'icon' => 'fa-file-circle-xmark',
+        ],
     ];
 
     $finishedLabels = ['Finishgood', 'Selesai'];
     $activeServices = collect($services)->filter(
         fn ($s) => ! in_array($s['progress']['badge']['label'] ?? '', $finishedLabels, true)
     )->count();
+
+    $quotationsUrl = \App\Filament\Pages\Quotations::getUrl();
 @endphp
 
 <x-filament-panels::page>
@@ -68,7 +98,14 @@
 
         <div class="stats-grid">
             @foreach ($cards as $card)
-                <div class="stat-card">
+                @php
+                    $statQuery = http_build_query(array_filter([
+                        'tab' => $card['key'],
+                        'from' => $dateFrom,
+                        'to' => $dateTo,
+                    ], fn ($v) => filled($v)));
+                @endphp
+                <a href="{{ $quotationsUrl }}?{{ $statQuery }}" class="stat-card stat-card-link" title="Lihat penawaran: {{ $card['desc'] }}">
                     <div class="stat-desc">{{ $card['desc'] }}</div>
                     <div class="stat-row">
                         <div class="stat-val">{{ $card['val'] }}</div>
@@ -76,7 +113,7 @@
                             <i class="fa {{ $card['icon'] }}" aria-hidden="true"></i>
                         </div>
                     </div>
-                </div>
+                </a>
             @endforeach
         </div>
 

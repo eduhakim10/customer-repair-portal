@@ -10,16 +10,16 @@
     ];
     $rows = $ready ? $this->paginatedQuotations() : [];
     $filteredCount = $ready ? count($this->filteredQuotations()) : 0;
-    $counts = $ready ? $this->tabCounts() : ['all' => 0, 'kendaraan_diterima' => 0, 'antrian' => 0, 'dikerjakan' => 0, 'finishgood' => 0];
+    $counts = $ready ? $this->tabCounts() : [
+        'all' => 0,
+        'sedang_menunggu' => 0,
+        'sedang_diperbaiki' => 0,
+        'sudah_diperbaiki' => 0,
+        'belum_ada_po' => 0,
+    ];
     $vehicles = $ready ? $this->vehicleOptions() : [];
     $statusOptions = $ready ? $this->portalStatusFilterOptions() : [];
-    $tabs = [
-        'all' => 'Semua',
-        'kendaraan_diterima' => 'Kendaraan Diterima',
-        'antrian' => 'Antrian',
-        'dikerjakan' => 'Dikerjakan',
-        'finishgood' => 'Finishgood',
-    ];
+    $tabs = \App\Filament\Pages\Quotations::tabLabels();
     $totalPages = $ready ? $this->totalPages() : 1;
 @endphp
 

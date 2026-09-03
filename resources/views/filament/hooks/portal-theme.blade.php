@@ -379,6 +379,19 @@
         padding: 18px 20px;
     }
 
+    a.stat-card-link {
+        display: block;
+        text-decoration: none;
+        color: inherit;
+        transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease;
+    }
+
+    a.stat-card-link:hover {
+        border-color: rgba(200, 16, 46, 0.28);
+        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+        transform: translateY(-1px);
+    }
+
     .stat-desc {
         font-size: 12px;
         color: #6b7280;
